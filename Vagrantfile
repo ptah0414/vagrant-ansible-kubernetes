@@ -1,12 +1,12 @@
-﻿IMAGE_NAME = "generic/ubuntu2004"
+IMAGE_NAME = "generic/ubuntu2004"
 N = 1
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
 
     config.vm.provider "libvirt" do |v|
-        v.memory = 2048
-        v.cpus = 2
+        v.memory = 8192
+        v.cpus = 4
     end
 
     config.vm.define "k8s-master" do |master|
