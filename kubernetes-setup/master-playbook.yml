@@ -119,7 +119,7 @@
 #    lineinfile:
 #      dest: /home/vagrant/calico.yaml
 #      regexp: '^\s{12}#\s*- name: CALICO_IPV4POOL_CIDR.*$'
-      line: '            - name: CALICO_IPV4POOL_CIDR'
+#      line: '            - name: CALICO_IPV4POOL_CIDR'
 
 #  - name: Add pod config to calico.yaml
 #    lineinfile:
