@@ -110,26 +110,30 @@
       group: vagrant
       mode: '0644'
 
-  - name: Download calico.conf
-    get_url:
-      url: https://docs.projectcalico.org/v3.20/manifests/calico.yaml
-      dest: /home/vagrant/calico.yaml
+#  - name: Download calico.conf
+#    get_url:
+#      url: https://docs.projectcalico.org/v3.4/getting-started/kubernetes/installation/hosted/calico.yaml
+#      dest: /home/vagrant/calico.yaml
 
-  - name: Add pod config to calico.yaml
-    lineinfile:
-      dest: /home/vagrant/calico.yaml
-      regexp: '^\s{12}#\s*- name: CALICO_IPV4POOL_CIDR.*$'
+#  - name: Add pod config to calico.yaml
+#    lineinfile:
+#      dest: /home/vagrant/calico.yaml
+#      regexp: '^\s{12}#\s*- name: CALICO_IPV4POOL_CIDR.*$'
       line: '            - name: CALICO_IPV4POOL_CIDR'
 
-  - name: Add pod config to calico.yaml
-    lineinfile:
-      dest: /home/vagrant/calico.yaml
-      regexp: '^\s{12}#\s*  value: "10.10.0.0\/16".*$'
-      line: '              value: "10.10.0.0/16"'
+#  - name: Add pod config to calico.yaml
+#    lineinfile:
+#      dest: /home/vagrant/calico.yaml
+#      regexp: '^\s{12}#\s*  value: "192.168.0.0\/16".*$'
+#      line: '              value: "10.10.0.0/16"'
+
+#  - name: Install calico CNI
+#    become: false
+#    command: kubectl create -f calico.yaml
 
   - name: Install calico CNI
     become: false
-    command: kubectl create -f calico.yaml
+    command: kubectl create -f https://docs.projectcalico.org/manifests/calico.yaml
 
   - name: Generate join command
     command: kubeadm token create --print-join-command
@@ -138,3 +142,38 @@
   - name: Copy join command to local file
     become: false
     local_action: copy content="{{ join_command.stdout_lines[0] }}" dest="./join-command"
+
+
+
+
+  - name: Add an apt signing key for Docker
+    apt_key:
+      url: https://download.docker.com/linux/ubuntu/gpg
+      state: present
+
+  - name: Add apt repository for stable version
+    apt_repository:
+      repo: deb [arch=amd64] https://download.docker.com/linux/ubuntu xenial stable
+      state: present
+
+  - name: Install docker and its dependecies
+    apt: 
+      name: "{{ packages }}"
+      state: present
+      update_cache: yes
+    vars:
+      packages:
+      - docker-ce 
+      - docker-ce-cli 
+      - containerd.io
+    notify:
+      - docker status
+
+  - name: Add vagrant user to docker group
+    user:
+      name: vagrant
+      group: docker
+
+  handlers:
+    - name: docker status
+      service: name=docker state=started
